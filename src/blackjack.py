@@ -7,24 +7,7 @@ from helper import (
     processPlayerCards,
 )
 
-"""
-Game flow:
-1. dealer gives 1 face down card and 1 face up card to the player and themselves
-2. player starts their turn 
-    - player looks at their card sum and the face up card of the dealer
-    - player chooses to hit or stay based on the decision tables, running count and ace flag 
-        - if player stays, it's the dealer's turn 
-        - if player hits, dealer gives another card (and restart step 2)
-3. dealer starts their turn
-    - dealer hits until they reach a sum >= 17 (https://www.cachecreek.com/blackjack-odds#:~:text=Dealer%20Stands%20on%20Soft%2017,win%20in%20the%20long%20run.)
-    - the player keeps track of every dealer card by updating the running count 
-4. hand ends when dealer and player stay, or either one busts 
-5. game prompts for a new hand, which maintains the running count. 
-"""
-
-print("Welcome to 3CD")
-time.sleep(1.5)
-print("The game is Blackjack")
+print("Welcome to 3CD: Blackjack Edition")
 time.sleep(1.5)
 
 # Assume 1 player
@@ -306,7 +289,10 @@ gameLoop(cards, numDecks, hands, runningCount)
 # Code derived from references will be marked with (Reference #)
 #
 # 1. Card counting tutorial - https://www.youtube.com/watch?app=desktop&v=KAyA_XTHi-g
-# 2. Q-Learning optimization of basic strategy - https://web.stanford.edu/class/aa228/reports/2020/final17.pdf
-# 3. Extended basic strategy probabilities - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
+# 2. Q-Learning optimization of basic strategy (13-21) - https://web.stanford.edu/class/aa228/reports/2020/final17.pdf
+# 3. Extended (8-12) basic strategy probabilities - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
 # 4. Soft 17 rule for blackjack dealers - https://www.cachecreek.com/blackjack-odds#:~:text=Dealer%20Stands%20on%20Soft%2017,win%20in%20the%20long%20run.
-# 
+# 5. Don Schlesinger's blackjack simulations - https://www.casinocenter.com/master-class-the-hi-lo-card-counting-system/
+# 6. The Illustrious 18 - https://wizardofodds.com/games/blackjack/card-counting/high-low/
+# 7. Diagram of the 18 - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
+# 8. ChatGPT (OpenAI)

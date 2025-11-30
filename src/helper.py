@@ -3,9 +3,6 @@ import numpy as np
 
 def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs "52" and function returns "King of Hearts")
     # all model logic here
-    # output = net(cardFile)
-    # _, predicted = torch.max(output, 1)
-    # return cards[classes[predicted[0]]]
     pass
 
 
@@ -13,37 +10,46 @@ def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model output
 
 
 def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount: int) -> tuple[int, int]:
-    # keep track of if the player has an ace, and what the running count of these cards are
+    # Keep track of the running count and if the player has an Ace
     aceFlag = 0
     runningCount = 0
 
-    # start of the game, player draws 2 cards
+    # The player draws 2 cards at the start of the game
     if fileCount == 2:
+        # Input example: "card1.jpg card2.jpg"
         selection = input("Please provide the filename(s) of the card(s) the player was dealt: ")
         selection = selection.split()
-        # selection = card6.png card7.png
-        # selection.split() = ["card6.png", "card7.png"]
+
+        # Ask the model what the first card is
         card1 = "Jack of Diamonds"  # pollModel(cards, selection[0])
+        # Get the card's numerical value
         card1 = cardValue(card1)
+        # Update the running count based on this card
         runningCount += addRunningCount(card1)
+        # Add the card to the player's hand
         playerCards.append(card1)
 
+        # Second card
         card2 = "7 of Clubs"  # pollModel(cards, selection[1])
         card2 = cardValue(card2)
         runningCount += addRunningCount(card2)
         playerCards.append(card2)
 
+        # Does the player have an Ace?
         if card1 == 11 or card2 == 11:
             aceFlag = 1
-    # player draws 1 card the rest of the game
-    else:
-        selection = input("Which card did the player draw next?: ")
-        selection = selection.split()
 
-        card0 = "2 of Spades"  # pollModel(cards, selection[0])
+    # The player draws 1 card for every other turn
+    else:
+        # Example input: "card3.jpg"
+        selection = input("Which card did the player draw next?: ")
+
+        card0 = "2 of Spades"  # pollModel(cards, selection)
         card0 = cardValue(card0)
         runningCount += addRunningCount(card0)
         playerCards.append(card0)
+
+        # Is this card an Ace?
         if card0 == 11:
             aceFlag = 1
 
@@ -51,29 +57,29 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
 
 
 def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount: int) -> int:
+    # Only concerned with the running count when it comes to the dealer's cards
     runningCount = 0
 
+    # The dealer draws 2 cards at the start of the game
     if fileCount == 2:
         selection = input("Please provide the filename(s) of the card(s) the dealer was dealt (dealer upcard first): ")
         selection = selection.split()
 
+        # The dealer's upcard
         card3 = "8 of Diamonds"  # pollModel(cards, selection[0])
         card3 = cardValue(card3)
-        # don't add the dealer's upcard to the running count yet
-        # after the player ends their turn, the dealer will draw until stay or bust
-        # the running count from this function will get added to the overall count at the end of the hand
         runningCount += addRunningCount(card3)
         dealerCards.append(card3)
 
+        # Second card
         card4 = "3 of Hearts"  # pollModel(cards, selection[1])
         card4 = cardValue(card4)
         runningCount += addRunningCount(card4)
         dealerCards.append(card4)
     else:
         selection = input("Which card did the dealer draw next?: ")
-        selection = selection.split()
 
-        card5 = "King of Hearts"  # pollModel(cards, selection[0])
+        card5 = "King of Hearts"  # pollModel(cards, selection)
         card5 = cardValue(card5)
         runningCount += addRunningCount(card5)
         dealerCards.append(card5)
@@ -81,11 +87,10 @@ def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount:
     return runningCount
 
 
-# convert the card description into a numerical value
+# Get a card's numerical value
 def cardValue(card: str) -> int:
+    # ex. King of Diamonds -> ['King', 'of', 'Diamonds']
     cardSplit = card.split()
-    # King of Diamonds
-    # [King, of, Diamonds]
     if cardSplit[0] == "Ace":
         return 11
     elif cardSplit[0] in ["Jack", "Queen", "King"]:
@@ -94,8 +99,8 @@ def cardValue(card: str) -> int:
         return int(cardSplit[0])
 
 
-# convert the card into a number specified by hi-low card counting
-# used card counting tutorial (Reference #1)
+# Compute the hi-low value for a given card
+# Used the following card-counting tutorial: (Reference #1)
 def addRunningCount(value: int) -> int:
     if 2 <= value <= 6:
         return 1
@@ -109,14 +114,18 @@ def addRunningCount(value: int) -> int:
 
 
 def evaluateOptions(aceFlag: int, runningCount: int, numDecks: int, playerCards: list[int], dealerCards: list[int]) -> int:
+    # Technically, the count used for deviations uses running count / number of decks
     move = 0
     totalCount = runningCount / numDecks
 
-    # Used Q-learning enhanced probabilities (Reference #2)
-    # Used extended probabilities, since Q-learning data stops at sum 13 and we need sum 8-12 (Reference #3)
+    # Used Q-learning enhanced probabilities for sum 13-21: (Reference #2)
+    # Used basic strategy probabilities for sum 8-12: (Reference #3)
+    # Assumed the player should hit for all cases within sum 2-7
     hardProbs = np.array(
         [
-            # columns (player score, dealer upcards): score 2 3 4 5 6 7 8 9 10 A
+            # Each row represents the player's sum
+            # Each column represents the dealer's upcard
+          # Sum 2  3  4  5  6  7  8  9  10 A
             [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -142,6 +151,7 @@ def evaluateOptions(aceFlag: int, runningCount: int, numDecks: int, playerCards:
 
     softProbs = np.array(
         [
+            # Same format as hard probabilities
             [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -164,14 +174,18 @@ def evaluateOptions(aceFlag: int, runningCount: int, numDecks: int, playerCards:
             [21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
+    # Calculate the player's current sum and get the dealer's upcard
     playerSum = sum(playerCards)
     dealerUp = dealerCards[0]
+    # Based on those 2 values, calculate the table indicies
     tableX, tableY = findCoordinate(playerSum, dealerUp)
+    # If the player has an Ace, they should choose from the soft totals
     if aceFlag == 0:
         move = hardProbs[tableY, tableX]
     else:
         move = softProbs[tableY, tableX]
 
+    # Based on the running count, the player may need to go against the basic strategy recommendation
     deviate = deviationRules(aceFlag, totalCount, playerSum, dealerUp)
     if deviate:
         move = not move
@@ -179,12 +193,7 @@ def evaluateOptions(aceFlag: int, runningCount: int, numDecks: int, playerCards:
     return move
 
 
-# the writer of the book that contains data from simulations: https://www.casinocenter.com/master-class-the-hi-lo-card-counting-system/
-# the condensed versions of those rules down to the 'illustrious 18': https://wizardofodds.com/games/blackjack/card-counting/high-low/
-# visual representation of the illustrious 18: https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
-# Note: the 18th deviation dictates when the player should take insurance; our implementation won't address this
-
-
+# The following 3 functions are used to select a value from one of the tables
 def findCoordinate(playerSum: int, dealerUp: int) -> tuple[int, int]:
     x = convertDealer(dealerUp)
     y = convertPlayer(playerSum)
@@ -199,7 +208,14 @@ def convertPlayer(playerSum: int) -> int:
     return playerSum - 2
 
 
+# Don Schlesinger wrote a book about the programming simulations he used 
+    # to create the rules for when one should deviate from basic strategy (Reference #5)
+# The most influential of these simulations were condensed into the "Illustrious 18" (Reference #6)
+# I used a diagram to help visualize these 18 deviations and build the softProbs and hardProbs tables (Reference #7)
+    # Our program doesn't incorporate insurance, so we excluded the 18th deviation from our implementation
+
 def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: int) -> bool:
+    # Deviations for the hard totals
     if aceFlag == 0:
         if playerSum == 16 and dealerUp == 10 and totalCount >= 0:
             return True
@@ -227,6 +243,7 @@ def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: in
             return True
         elif playerSum == 8 and dealerUp == 6 and totalCount >= 2:
             return True
+    # Deviations for the soft totals
     else:
         if playerSum == 19 and dealerUp == 6 and totalCount >= 1:
             return True

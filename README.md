@@ -22,8 +22,7 @@ python3 blackjack.py
 After the introduction, enter the number of decks used in the game
 
 ```
-Welcome to 3CD
-The game is Blackjack
+Welcome to 3CD: Blackjack Edition
 How many decks of cards are in use?: 1
 ```
 
