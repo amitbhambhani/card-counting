@@ -9,33 +9,38 @@ def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model output
     pass
 
 
+# ====================== PROCESS CARDS ========================#
+
+
 def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount: int) -> tuple[int, int]:
+    # keep track of if the player has an ace, and what the running count of these cards are
     aceFlag = 0
     runningCount = 0
-    print("What card did the player draw?")
 
+    # start of the game, player draws 2 cards
     if fileCount == 2:
-        selection = input("Provide 2 files: ")
+        selection = input("Please provide the filename(s) of the card(s) the player was dealt: ")
         selection = selection.split()
         # selection = card6.png card7.png
         # selection.split() = ["card6.png", "card7.png"]
-        card1 = pollModel(cards, selection[0])
+        card1 = "Jack of Diamonds"  # pollModel(cards, selection[0])
         card1 = cardValue(card1)
         runningCount += addRunningCount(card1)
         playerCards.append(card1)
 
-        card2 = pollModel(cards, selection[1])
+        card2 = "7 of Clubs"  # pollModel(cards, selection[1])
         card2 = cardValue(card2)
         runningCount += addRunningCount(card2)
         playerCards.append(card2)
 
         if card1 == 11 or card2 == 11:
             aceFlag = 1
+    # player draws 1 card the rest of the game
     else:
-        selection = input("Provide 1 file: ")
+        selection = input("Which card did the player draw next?: ")
         selection = selection.split()
 
-        card0 = pollModel(cards, selection[0])
+        card0 = "2 of Spades"  # pollModel(cards, selection[0])
         card0 = cardValue(card0)
         runningCount += addRunningCount(card0)
         playerCards.append(card0)
@@ -45,39 +50,42 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
     return aceFlag, runningCount
 
 
-def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount: int) -> tuple[int, int]:
-    aceFlag = 0
+def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount: int) -> int:
     runningCount = 0
-    print("What card did the dealer draw?")
+
     if fileCount == 2:
-        selection = input("Provide 2 files, where the first is the dealer's up card: ")
+        selection = input("Please provide the filename(s) of the card(s) the dealer was dealt (dealer upcard first): ")
         selection = selection.split()
 
-        card3 = pollModel(cards, selection[0])
+        card3 = "8 of Diamonds"  # pollModel(cards, selection[0])
         card3 = cardValue(card3)
+        # don't add the dealer's upcard to the running count yet
+        # after the player ends their turn, the dealer will draw until stay or bust
+        # the running count from this function will get added to the overall count at the end of the hand
         runningCount += addRunningCount(card3)
         dealerCards.append(card3)
 
-        card4 = pollModel(cards, selection[1])
+        card4 = "3 of Hearts"  # pollModel(cards, selection[1])
         card4 = cardValue(card4)
+        runningCount += addRunningCount(card4)
         dealerCards.append(card4)
-
-        if card3 == 11:
-            aceFlag = 1
     else:
-        selection = input("Provide 1 file: ")
+        selection = input("Which card did the dealer draw next?: ")
         selection = selection.split()
 
-        card5 = pollModel(cards, selection[0])
+        card5 = "King of Hearts"  # pollModel(cards, selection[0])
         card5 = cardValue(card5)
+        runningCount += addRunningCount(card5)
         dealerCards.append(card5)
 
-    return aceFlag, runningCount
+    return runningCount
 
 
 # convert the card description into a numerical value
 def cardValue(card: str) -> int:
     cardSplit = card.split()
+    # King of Diamonds
+    # [King, of, Diamonds]
     if cardSplit[0] == "Ace":
         return 11
     elif cardSplit[0] in ["Jack", "Queen", "King"]:
@@ -87,7 +95,7 @@ def cardValue(card: str) -> int:
 
 
 # convert the card into a number specified by hi-low card counting
-# card counting tutorial followed from here: https://www.youtube.com/watch?app=desktop&v=KAyA_XTHi-g
+# used card counting tutorial (Reference #1)
 def addRunningCount(value: int) -> int:
     if 2 <= value <= 6:
         return 1
@@ -97,12 +105,15 @@ def addRunningCount(value: int) -> int:
         return -1
 
 
+# ===================== EVALUATE OPTIONS =========================#
+
+
 def evaluateOptions(aceFlag: int, runningCount: int, numDecks: int, playerCards: list[int], dealerCards: list[int]) -> int:
     move = 0
     totalCount = runningCount / numDecks
 
-    # Q-learning enhanced probabilities found at https://web.stanford.edu/class/aa228/reports/2020/final17.pdf
-    # this data doesn't go below 13, so for 12-8 we use: https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
+    # Used Q-learning enhanced probabilities (Reference #2)
+    # Used extended probabilities, since Q-learning data stops at sum 13 and we need sum 8-12 (Reference #3)
     hardProbs = np.array(
         [
             # columns (player score, dealer upcards): score 2 3 4 5 6 7 8 9 10 A
@@ -156,10 +167,10 @@ def evaluateOptions(aceFlag: int, runningCount: int, numDecks: int, playerCards:
     playerSum = sum(playerCards)
     dealerUp = dealerCards[0]
     tableX, tableY = findCoordinate(playerSum, dealerUp)
-    if aceFlag == 1:
-        move = hardProbs[tableX, tableY]
+    if aceFlag == 0:
+        move = hardProbs[tableY, tableX]
     else:
-        move = softProbs[tableX, tableY]
+        move = softProbs[tableY, tableX]
 
     deviate = deviationRules(aceFlag, totalCount, playerSum, dealerUp)
     if deviate:
@@ -185,7 +196,7 @@ def convertDealer(dealerUp: int) -> int:
 
 
 def convertPlayer(playerSum: int) -> int:
-    return playerSum - 13
+    return playerSum - 2
 
 
 def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: int) -> bool:
