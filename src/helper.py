@@ -1,13 +1,39 @@
 import numpy as np
-
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+#from torch.optim import lr_scheduler
+import torch.backends.cudnn as cudnn
+import numpy as np
+from torchvision import transforms
+import torchvision
+#from torchvision import datasets, models, transforms
+import matplotlib.pyplot as plt
+import time
+import os
+from PIL import Image
+from tempfile import TemporaryDirectory
 
 def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs "52" and function returns "King of Hearts")
-    # all model logic here
-    # output = net(cardFile)
-    # _, predicted = torch.max(output, 1)
-    # return cards[classes[predicted[0]]]
-    pass
+    #Following Save and Load The Model tutorial: https://docs.pytorch.org/tutorials/beginner/basics/saveloadrun_tutorial.html 
+    model = torch.load("card_model.pth") #load the trained model which was saved to "card_model.pth"
+    model.eval() #Use eval mode for consistent results
+    
+    # https://docs.pytorch.org/vision/stable/transforms.html
+    transform = transforms.Compose([
+        transforms.Resize((256,256)), #change image to be 256x256
+        transforms.ToTensor(), #converts image into a tensor
+    ])
 
+    img = transform(Image.open(cardFile).convert("RGB")) #convert image to rgb scale and transform it, so it the model can use it
+    img = img.unsqueeze(0) #add a dimension to img as model expects a batchsize
+
+    with torch.no_grad(): # doesn't allow gradient calculation
+        output = model(img) #model predictions
+        _, predicted = torch.max(output, 1) #class that the model predicts
+
+    return cards[str(predicted)] #convert tensor to str and get the card name from dictionary 
 
 def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount: int) -> tuple[int, int]:
     aceFlag = 0
