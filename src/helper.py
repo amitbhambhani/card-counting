@@ -1,9 +1,12 @@
 import numpy as np
 
+from script import predict
+
 
 def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs "52" and function returns "King of Hearts")
-    # all model logic here
-    pass
+    # Call the model and retrieve the class associated with cardFile
+    classNum = str(predict(cardFile))
+    return cards[classNum]
 
 
 # ====================== PROCESS CARDS ========================#
@@ -13,15 +16,18 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
     # Keep track of the running count and if the player has an Ace
     aceFlag = 0
     runningCount = 0
+    # Cards drawn used for printing
+    chosenCards = []
 
     # The player draws 2 cards at the start of the game
-    if fileCount == 2:
+    if fileCount == 2:    
         # Input example: "card1.jpg card2.jpg"
         selection = input("Please provide the filename(s) of the card(s) the player was dealt: ")
         selection = selection.split()
 
         # Ask the model what the first card is
-        card1 = "Jack of Diamonds"  # pollModel(cards, selection[0])
+        card1 = pollModel(cards, selection[0])
+        chosenCards.append(card1)
         # Get the card's numerical value
         card1 = cardValue(card1)
         # Update the running count based on this card
@@ -30,7 +36,8 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
         playerCards.append(card1)
 
         # Second card
-        card2 = "7 of Clubs"  # pollModel(cards, selection[1])
+        card2 = pollModel(cards, selection[1])
+        chosenCards.append(card2)
         card2 = cardValue(card2)
         runningCount += addRunningCount(card2)
         playerCards.append(card2)
@@ -39,12 +46,15 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
         if card1 == 11 or card2 == 11:
             aceFlag = 1
 
+        print(f"The player drew: {chosenCards[0]} and {chosenCards[1]}")
+
     # The player draws 1 card for every other turn
     else:
         # Example input: "card3.jpg"
         selection = input("Which card did the player draw next?: ")
 
-        card0 = "2 of Spades"  # pollModel(cards, selection)
+        card0 = pollModel(cards, selection)
+        chosenCards.append(card0)
         card0 = cardValue(card0)
         runningCount += addRunningCount(card0)
         playerCards.append(card0)
@@ -53,36 +63,46 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
         if card0 == 11:
             aceFlag = 1
 
+        print(f"The player drew: {chosenCards[0]}")
+
     return aceFlag, runningCount
 
 
 def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount: int) -> int:
     # Only concerned with the running count when it comes to the dealer's cards
     runningCount = 0
-
+    # Cards drawn used for printing
+    chosenCards = []
     # The dealer draws 2 cards at the start of the game
     if fileCount == 2:
         selection = input("Please provide the filename(s) of the card(s) the dealer was dealt (dealer upcard first): ")
         selection = selection.split()
 
         # The dealer's upcard
-        card3 = "8 of Diamonds"  # pollModel(cards, selection[0])
+        card3 = pollModel(cards, selection[0])
+        chosenCards.append(card3)
         card3 = cardValue(card3)
         runningCount += addRunningCount(card3)
         dealerCards.append(card3)
 
         # Second card
-        card4 = "3 of Hearts"  # pollModel(cards, selection[1])
+        card4 = pollModel(cards, selection[1])
+        chosenCards.append(card4)
         card4 = cardValue(card4)
         runningCount += addRunningCount(card4)
         dealerCards.append(card4)
+
+        print(f"The dealer drew: {chosenCards[0]} and {chosenCards[1]}")
     else:
         selection = input("Which card did the dealer draw next?: ")
 
-        card5 = "King of Hearts"  # pollModel(cards, selection)
+        card5 = pollModel(cards, selection)
+        chosenCards.append(card5)
         card5 = cardValue(card5)
         runningCount += addRunningCount(card5)
         dealerCards.append(card5)
+
+        print(f"The dealer drew: {chosenCards[0]}")
 
     return runningCount
 

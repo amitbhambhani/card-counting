@@ -47,7 +47,7 @@ transform = transforms.Compose([
 ])
 
 def predict(image_path):
-    model_path="card_model.pth"
+    model_path="src/card_model.pth"
     if not os.path.exists(image_path):
         print(f"Error: image not found: {image_path}")
         return
