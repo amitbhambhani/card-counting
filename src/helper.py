@@ -14,10 +14,10 @@ import time
 import os
 from PIL import Image
 from tempfile import TemporaryDirectory
-
+'''
 def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs "52" and function returns "King of Hearts")
     #Following Save and Load The Model tutorial: https://docs.pytorch.org/tutorials/beginner/basics/saveloadrun_tutorial.html 
-    model = torch.load("card_model.pth") #load the trained model which was saved to "card_model.pth"
+    model = torch.load("../card_model.pth") #load the trained model which was saved to "card_model.pth"
     model.eval() #Use eval mode for consistent results
     
     # https://docs.pytorch.org/vision/stable/transforms.html
@@ -34,7 +34,171 @@ def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model output
         _, predicted = torch.max(output, 1) #class that the model predicts
 
     return cards[str(predicted)] #convert tensor to str and get the card name from dictionary 
+'''
+#Model from ../card.ipynb
+class SimpleCNN(nn.Module):
+    def __init__(self, num_classes=52):
+        super(SimpleCNN, self).__init__()
 
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),     # 128x128
+
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),     # 64x64
+
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),     # 32x32
+
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),     # 16x16
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(256 * 16 * 16, 512),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs "52" and function returns "King of Hearts")
+    model_path="/Users/ryanmckee/card-counting/card_model4.pth"
+    if not os.path.exists(cardFile):
+        print(f"Error: image not found: {cardFile}")
+        return
+
+    if not os.path.exists(model_path):
+        print(f"Error: model not found: {model_path}")
+        return
+    
+    #Following Save and Load The Model tutorial: https://docs.pytorch.org/tutorials/beginner/basics/saveloadrun_tutorial.html 
+    #model = torch.load(model_path) #load the trained model which was saved to "card_model.pth"
+    #model.eval() #Use eval mode for consistent results
+    # Load model
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = SimpleCNN(num_classes=52)
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+
+    # https://docs.pytorch.org/vision/stable/transforms.html
+    transform = transforms.Compose([
+        transforms.Resize((256,256)), #change image to be 256x256
+        transforms.ToTensor(), #converts image into a tensor
+    ])
+
+    img = transform(Image.open(cardFile).convert("RGB")) #convert image to rgb scale and transform it, so it the model can use it
+    img = img.unsqueeze(0) #add a dimension to img as model expects a batchsize
+
+    with torch.no_grad(): # doesn't allow gradient calculation
+        output = model(img) #model predictions
+        _, predicted = output.max(1) #class that the model predicts
+
+    return cards[str(predicted)] #convert tensor to str and get the card name from dictionary 
+
+def test_pollModel():
+    """
+    A simple test function to run and print the result of pollModel.
+    """
+    print("--- Starting pollModel Test ---")
+    
+    # 1. Define the necessary inputs for the function
+    # Example card dictionary (must match your model's output classes)
+    test_cards = {
+        "01": "Ace of Spades",
+        "02": "Ace of Clubs",
+        "03": "Ace of Diamonds",
+        "04": "Ace of Hearts",
+        "05": "2 of Spades",
+        "06": "2 of Clubs",
+        "07": "2 of Diamonds",
+        "08": "2 of Hearts",
+        "09": "3 of Spades",
+        "10": "3 of Clubs",
+        "11": "3 of Diamonds",
+        "12": "3 of Hearts",
+        "13": "4 of Spades",
+        "14": "4 of Clubs",
+        "15": "4 of Diamonds",
+        "16": "4 of Hearts",
+        "17": "5 of Spades",
+        "18": "5 of Clubs",
+        "19": "5 of Diamonds",
+        "20": "5 of Hearts",
+        "21": "6 of Spades",
+        "22": "6 of Clubs",
+        "23": "6 of Diamonds",
+        "24": "6 of Hearts",
+        "25": "7 of Spades",
+        "26": "7 of Clubs",
+        "27": "7 of Diamonds",
+        "28": "7 of Hearts",
+        "29": "8 of Spades",
+        "30": "8 of Clubs",
+        "31": "8 of Diamonds",
+        "32": "8 of Hearts",
+        "33": "9 of Spades",
+        "34": "9 of Clubs",
+        "35": "9 of Diamonds",
+        "36": "9 of Hearts",
+        "37": "10 of Spades",
+        "38": "10 of Clubs",
+        "39": "10 of Diamonds",
+        "40": "10 of Hearts",
+        "41": "Jack of Spades",
+        "42": "Jack of Clubs",
+        "43": "Jack of Diamonds",
+        "44": "Jack of Hearts",
+        "45": "Queen of Spades",
+        "46": "Queen of Clubs",
+        "47": "Queen of Diamonds",
+        "48": "Queen of Hearts",
+        "49": "King of Spades",
+        "50": "King of Clubs",
+        "51": "King of Diamonds",
+        "52": "King of Hearts", # Use the predicted key from your example comment
+        # Add all 52 card mappings here
+    }
+    
+    # 2. Specify the path to a test image file
+    # **REPLACE 'test_card_image.jpg'** with the actual path to an image file 
+    # you want to test (e.g., an image of a 'King of Hearts').
+    test_file_path = "../test/01/AS36.jpg"
+    
+    # Check if the required test file exists (optional, but good practice)
+    if not os.path.exists(test_file_path):
+        print(f"**WARNING:** Test image file not found at: '{test_file_path}'")
+        print("Please replace 'test_card_image.jpg' with a valid image path to run the test.")
+        # We'll skip the function call if the file is missing to avoid an error inside pollModel
+        return 
+        
+    # 3. Call the function with the test inputs
+    result = pollModel( test_cards, test_file_path)
+    
+    # 4. Print the result
+    print(f"\n✅ Model Prediction Result:\n{result}\n")
+    print("--- Test Complete ---")
+
+
+# This block ensures that 'test_pollModel()' only runs when you execute this 
+# file directly (e.g., 'python your_file_name.py'). 
+# If it's imported into another file, this block is skipped.
+if __name__ == "__main__":
+    test_pollModel()
+
+''' 
 def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount: int) -> tuple[int, int]:
     aceFlag = 0
     runningCount = 0
@@ -252,3 +416,4 @@ def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: in
         elif playerSum == 17 and dealerUp == 2 and totalCount >= 1:
             return True
     return False
+'''
