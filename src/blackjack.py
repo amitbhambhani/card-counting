@@ -203,7 +203,7 @@ def gameLoop(cards: dict[str, str], numDecks: int, hands: int, runningCount: int
                     # The player can now see the dealer's hole card
                     runningCount += addRunningCount(dealerCards[1])
                     
-                    # Many casinos employ the "soft 17" rule (Reference #4)
+                    # Many casinos employ the "soft 17" rule (Reference #1)
                     # Dealers will hit if they're below a sum of 17, and stay otherwise
                         # However, if the player has a sum greater than the dealer, and 
                         # the dealer's sum is at least 17, the dealer will hit again
@@ -286,13 +286,6 @@ gameLoop(cards, numDecks, hands, runningCount)
 
 
 # ===================== REFERENCES ====================#
-# Code derived from references will be marked with (Reference #)
+# Code/logic derived from references will be marked with (Reference #)
 #
-# 1. Card counting tutorial - https://www.youtube.com/watch?app=desktop&v=KAyA_XTHi-g
-# 2. Q-Learning optimization of basic strategy (13-21) - https://web.stanford.edu/class/aa228/reports/2020/final17.pdf
-# 3. Extended (8-12) basic strategy probabilities - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
-# 4. Soft 17 rule for blackjack dealers - https://www.cachecreek.com/blackjack-odds#:~:text=Dealer%20Stands%20on%20Soft%2017,win%20in%20the%20long%20run.
-# 5. Don Schlesinger's blackjack simulations - https://www.casinocenter.com/master-class-the-hi-lo-card-counting-system/
-# 6. The Illustrious 18 - https://wizardofodds.com/games/blackjack/card-counting/high-low/
-# 7. Diagram of the 18 - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
-# 8. ChatGPT (OpenAI)
+# 1. Soft 17 rule for blackjack dealers - https://www.cachecreek.com/blackjack-odds#:~:text=Dealer%20Stands%20on%20Soft%2017,win%20in%20the%20long%20run.

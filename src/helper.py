@@ -209,9 +209,9 @@ def convertPlayer(playerSum: int) -> int:
 
 
 # Don Schlesinger wrote a book about the programming simulations he used 
-    # to create the rules for when one should deviate from basic strategy (Reference #5)
-# The most influential of these simulations were condensed into the "Illustrious 18" (Reference #6)
-# I used a diagram to help visualize these 18 deviations and build the softProbs and hardProbs tables (Reference #7)
+    # to create the rules for when one should deviate from basic strategy (Reference #4)
+# The most influential of these simulations were condensed into the "Illustrious 18" (Reference #5)
+# I used a diagram to help visualize these 18 deviations and build the softProbs and hardProbs tables (Reference #6)
     # Our program doesn't incorporate insurance, so we excluded the 18th deviation from our implementation
 
 def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: int) -> bool:
@@ -254,3 +254,14 @@ def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: in
         elif playerSum == 17 and dealerUp == 2 and totalCount >= 1:
             return True
     return False
+
+
+# ===================== REFERENCES ====================#
+# Code/logic derived from references will be marked with (Reference #)
+#
+# 1. Card counting tutorial - https://www.youtube.com/watch?app=desktop&v=KAyA_XTHi-g
+# 2. Q-Learning optimization of basic strategy (13-21) - https://web.stanford.edu/class/aa228/reports/2020/final17.pdf
+# 3. Extended (8-12) basic strategy probabilities - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
+# 4. Don Schlesinger's blackjack simulations - https://www.casinocenter.com/master-class-the-hi-lo-card-counting-system/
+# 5. The Illustrious 18 - https://wizardofodds.com/games/blackjack/card-counting/high-low/
+# 6. Diagram of the 18 - https://www.blackjackapprenticeship.com/wp-content/uploads/2019/07/BJA_S17.pdf
