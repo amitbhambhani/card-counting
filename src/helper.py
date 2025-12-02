@@ -3,7 +3,7 @@ import numpy as np
 from script import predict
 
 
-def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs "52" and function returns "King of Hearts")
+def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model outputs 52 and function returns "King of Hearts")
     # Call the model and retrieve the class associated with cardFile
     classNum = str(predict(cardFile))
     return cards[classNum]
@@ -16,7 +16,7 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
     # Keep track of the running count and if the player has an Ace
     aceFlag = 0
     runningCount = 0
-    # Cards drawn used for printing
+    # Cards drawn, used for printing
     chosenCards = []
 
     # The player draws 2 cards at the start of the game
@@ -71,8 +71,8 @@ def processPlayerCards(cards: dict[str, str], playerCards: list[int], fileCount:
 def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount: int) -> int:
     # Only concerned with the running count when it comes to the dealer's cards
     runningCount = 0
-    # Cards drawn used for printing
     chosenCards = []
+
     # The dealer draws 2 cards at the start of the game
     if fileCount == 2:
         selection = input("Please provide the filename(s) of the card(s) the dealer was dealt (dealer upcard first): ")
@@ -109,7 +109,7 @@ def processDealerCards(cards: dict[str, str], dealerCards: list[int], fileCount:
 
 # Get a card's numerical value
 def cardValue(card: str) -> int:
-    # ex. King of Diamonds -> ['King', 'of', 'Diamonds']
+    # ex. "King of Diamonds" -> ['King', 'of', 'Diamonds']
     cardSplit = card.split()
     if cardSplit[0] == "Ace":
         return 11

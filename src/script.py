@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
-import sys
 import os
 
 class SimpleCNN(nn.Module):
@@ -48,10 +47,13 @@ transform = transforms.Compose([
 
 def predict(image_path):
     model_path="src/card_model.pth"
+
+    # Used ChatGPT to get the command that checks if a path is valid using the os library (Reference #1)
     if not os.path.exists(image_path):
         print(f"Error: image not found: {image_path}")
         return
 
+    # Used ChatGPT to get the command that checks if a path is valid using the os library (Reference #1)
     if not os.path.exists(model_path):
         print(f"Error: model not found: {model_path}")
         return
@@ -77,3 +79,9 @@ def predict(image_path):
     label_num = predicted.item() + 1
 
     return label_num
+
+
+# ===================== REFERENCES ====================#
+# Code/logic derived from references will be marked with (Reference #)
+#
+# 1. ChatGPT (OpenAI)
