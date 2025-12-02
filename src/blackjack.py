@@ -75,8 +75,10 @@ cards = {
     "52": "King of Hearts",
 }
 
-# 2-6 = +1, 7-9 = 0, T (10, J, Q, K) and A = -1
 # This represents the player's hi-low count of all cards they can see at any given time
+    # 2-6 = +1
+    # 7-9 = 0
+    # T (10, J, Q, K) and A = -1
 runningCount = 0
 
 def gameLoop(cards: dict[str, str], numDecks: int, hands: int, runningCount: int) -> int:
