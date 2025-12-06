@@ -4,6 +4,7 @@ from torchvision import transforms
 from PIL import Image
 import os
 
+#Model from ../card.ipynb
 class SimpleCNN(nn.Module):
     def __init__(self, num_classes=52):
         super(SimpleCNN, self).__init__()
@@ -41,10 +42,13 @@ class SimpleCNN(nn.Module):
 
 
 transform = transforms.Compose([
+    # Resize each image to 256x256
     transforms.Resize((256, 256)),
+    # Create a matrix representation of the image
     transforms.ToTensor(),
 ])
 
+# Takes a path to an image as a parameter. Returns the model output given the image. 
 def predict(image_path):
     model_path="src/card_model.pth"
 
@@ -59,21 +63,20 @@ def predict(image_path):
         return
 
     # Load image
-    image = Image.open(image_path).convert("RGB")
+    image = Image.open(image_path).convert("RGB")  #convert image to rgb scale and transform it, so it the model can use it
     img_tensor = transform(image).unsqueeze(0)  # add batch dimension
 
-    # Load model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # GPU or CPU
 
-    model = SimpleCNN(num_classes=52)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.to(device)
-    model.eval()
+    model = SimpleCNN(num_classes=52) # initalizes model 
+    model.load_state_dict(torch.load(model_path, map_location=device)) # Load training from model_path into device and the model
+    model.to(device) # Move model into the device
+    model.eval() # Set model to evaluation mode
 
     # Predict
-    with torch.no_grad():
-        output = model(img_tensor.to(device))
-        _, predicted = output.max(1)
+    with torch.no_grad(): # doesn't allow gradient calculation
+        output = model(img_tensor.to(device)) #model predictions
+        _, predicted = output.max(1) #class that the model predicts
 
     # Convert class index to folder name (01–52)
     label_num = predicted.item() + 1
