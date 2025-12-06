@@ -108,6 +108,7 @@ def pollModel(cards: dict[str, str], cardFile: str) -> str:  # (ex. model output
 
     return cards[str(predicted)] #convert tensor to str and get the card name from dictionary 
 
+# Used ChatGPT to generate test_pollModel meant to test pollModel runs is correctly implemented (Reference #1)
 def test_pollModel():
     """
     A simple test function to run and print the result of pollModel.
@@ -417,3 +418,8 @@ def deviationRules(aceFlag: int, totalCount: float, playerSum: int, dealerUp: in
             return True
     return False
 '''
+
+# ===================== REFERENCES ====================#
+# Code/logic derived from references will be marked with (Reference #)
+#
+# 1. ChatGPT (OpenAI)
